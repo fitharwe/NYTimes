@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Page Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CDN -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+
+    <style>
+        .jumbotron {
+            text-align: center;
+            background-color: rgb(10, 10, 44);
+            color: white;
+            margin: auto;
+            float: center;
+            font-family: "Arial Black", Gadget, sans-serif;
+            border-radius: 5px;
+            font-size: 50px;
+        }
+
+
+        .panel-heading {
+            background-color: rgb(10, 10, 44) !important;
+            color: white !important;
+            font-family: "Arial Black", Gadget, sans-serif;
+            border-radius: 5px;
+        }
+
+        .panel-body {
+            border-style: solid;
+            border-width: 1px;
+            border-color: rgb(10, 10, 44);
+        }
+
+        .btn {
+            background-color: gray;
+            color: white;
+            font-family: "Arial Black", Gadget, sans-serif;
+        }
+
+        .well {
+            margin-left: 20px;
+            margin-right: 20px;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="container">
+        <!-- Navbar header -->
+        <div class="jumbotron">
+            <i class="fa fa-fw fa-newspaper-o"></i>New York Times Search
+        </div>
+
+
+        <br>
+
+        <div class="panel panel-default">
+            <div class="panel-heading">Search Parameters</div>
+            <div class="panel-body">
+                <form>
+                    <div class="form-group">
+                        <label for="searchTerm">Search Term</label>
+                        <br>
+                        <input type="text" class="form-control" id="searchterm">
+                    </div>
+                    <div class="form-group">
+                        <label for="numberRecords">Number of Records to Retrieve</label>
+                        <br>
+                        <input type="number" class="form-control" id="recordnumber">
+                    </div>
+                    <div class="form-group">
+                        <label for="startYear">Start Year (Optional)</label>
+                        <br>
+                        <input type="date" class="form-control" id="yearstart">
+                    </div>
+                    <div class="form-group">
+                        <label for="endYear">End Year (Optional)</label>
+                        <br>
+                        <input type="date" class="form-control" id="yearend">
+                    </div>
+                    <button class="btn btn-default" id="search">Search</button>
+                    <button class="btn btn-default" id="clear">Clear Results</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="panel panel-default">
+            <div class="panel-heading">Top Articles</div>
+            <div class="panel-body">
+                <div class="row">
+                    <div id="topArticles"></div>
+                </div>
+            </div>
+        </div>
+
+
+
+    </div>
+
+
+
+    <!-- JQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+
+    <!-- JQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    <!-- JavaScript call -->
+    <script>
+        var searchTerm, // Search term
+            numResult, // Number of Results
+            startYear, // Stting year
+            endYear, // Ending year
+            articlesDiv = $("#topArticles"),
+            results; // Store the results into this variable
+
+        // Adding click event listen listener to all buttons
+
+
+
+
+        $("#search").on("click", function (event) {
+            event.preventDefault();
+
+
+            searchTerm = $('#searchterm').val();
+            numResult = $('#recordnumber').val();
+            startYear = $('#yearstart').val();
+            endYear = $('#yearend').val();
+            var startYrResult, endYrResult;
+
+            if (startYear == "" && endYear == "") {
+                startYrResult = "'begin_date': 2017-01-01";
+                endYrResult = "'end_date': 2018-01-01";
+            } else {
+                startYrResult = "'begin_date': " + startYear;
+                endYrResult = "'end_date': " + endYear;
+            }
+
+            var url = "https://api.nytimes.com/svc/search/v2/articlesearch.json";
+            url +=
+                "?" +
+                $.param({
+                    "api-key": "061e0febb5404ea1a4884567e816498a",
+                    'q': searchTerm,
+                    startYrResult,
+                    endYrResult,
+                });
+
+            // AJAX Call
+
+            $.ajax({
+                    url: url,
+                    method: "GET"
+                })
+                .done(function (result) {
+                    var obj = result.response.docs;
+                    console.log(url);
+                    console.log(obj);
+                    $(".well").remove();
+                    // Iterate through each piece of data
+                    for (var i = 0; i < numResult; i++) {
+                        // May need to revisit this obj
+                        var artDiv = $("<div>").addClass("well");
+                        var h = $("<h2>");
+                        var by = $("<p>");
+                        h.text(obj[i].headline.main);
+
+                        artDiv.append(h);
+
+                        // Checks to see if there is a By line
+                        if (obj[i].hasOwnProperty('byline')) {
+                            by.text(obj[i].byline.original);
+                            artDiv.append(by);
+                        }
+
+                        articlesDiv.prepend(artDiv);
+                    }
+                })
+                .fail(function (err) {
+                    throw err;
+                });
+        });
+    </script>
+</body>
+
+</html>
